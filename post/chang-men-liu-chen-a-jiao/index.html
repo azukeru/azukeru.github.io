@@ -8,7 +8,7 @@
 <meta name="keywords" content="Gridea静态个人博客">
 <meta name="description" content="温故而知新">
 <meta name="theme-color" content="#000">
-<title>藏经阁</title>
+<title>长门柳（陈阿娇） | 藏经阁</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1607264589500">
 <link rel="stylesheet" href="/styles/main.css">
 <link rel="stylesheet" href="/media/css/gemini.css">
@@ -29,7 +29,8 @@
 
 
 
-  <meta name="description" content="温故而知新">
+  <meta name="description" content="长门柳（陈阿娇）" />
+  <meta name="keywords" content="novel" />
 </head>
 
 <body>
@@ -78,7 +79,7 @@
             
               
             
-            <li class="nav-item nav-item-active">
+            <li class="nav-item ">
               
               
                 <a href="/archives/" target="_self">
@@ -155,10 +156,26 @@
   <div class="main-continer">
     
     <div
-      class="section-layout  gemini">
+      class="section-layout gemini ">
       <div class="section-layout-wrapper">
-        <div id="sidebarMeta" class="sidebar">
-    
+        
+
+<div class="sidebar">
+  
+    <div class="sidebar-box box-shadow-wrapper bg-color right-motion" id="sidebar">
+      
+        <div class="post-list-sidebar">
+          <div class="sidebar-title">
+            <span id="tocSideBar" class="sidebar-title-item sidebar-title-active">文章目录</span>
+            <span id="metaSideBar" class="sidebar-title-item">站点概览</span>
+          </div>
+        </div>
+      
+      <div class="sidebar-body gemini" id="sidebar_body">
+        
+          
+            <div class="post-side-meta" id="post_side_meta">
+              
 <div class="sidebar-wrapper box-shadow-wrapper bg-color">
   <div class="sidebar-item">
     <img class="site-author-image right-motion" src="/images/avatar.png"/>
@@ -196,97 +213,682 @@
 
 
 </div>
+            </div>
+            <div class="post-toc sidebar-body-active" id="post_toc" style="opacity: 1;">
+              <div class="toc-box right-motion">
+  <div class="toc-wrapper auto-number auto"
+    id="toc_wrapper">
+    <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E6%88%91%E4%B9%9F%E6%80%95%E6%88%91%E5%BF%98%E4%BA%86">我也怕我忘了。</a></li>
+<li><a href="#%E4%B8%80%E5%88%87%E9%83%BD%E5%9B%9E%E4%B8%8D%E5%8E%BB%E4%BA%86">一切都回不去了。</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
 </div>
+
 <script>
-  let sidebarMeta = document.querySelector('#sidebarMeta');
-  let scheme = 'gemini';
-  let sidebarWrapper = document.querySelector('.sidebar-wrapper');
-  if (sidebarMeta && (scheme === 'pisces' || scheme === 'gemini')) {
-    document.addEventListener('scroll', function(e) {
-      if (document.scrollingElement.scrollTop > parseInt(sidebarMeta.style.marginTop) + 10) {
-        sidebarWrapper.classList.add('home-sidebar-fixed')
-      } else {
-        sidebarWrapper.classList.remove('home-sidebar-fixed')
+
+  let lastTop = 0, lList = [], hList = [], postBody, lastIndex = -1;
+  let active = 'active-show', activeClass = 'active-current';
+  let tocWrapper = document.querySelector('#toc_wrapper');
+  let tocContent = tocWrapper.children[0];
+  let autoNumber = tocWrapper && tocWrapper.classList.contains('auto-number');
+
+  function addTocNumber(elem, deep) {
+    if (!elem) {
+      return;
+    }
+    let prop = elem.__proto__;
+
+    if (prop === HTMLUListElement.prototype) {
+      for (let i = 0; i < elem.children.length; i++) {
+        addTocNumber(elem.children[i], deep + (i + 1) + '.');
       }
+    } else if (prop === HTMLLIElement.prototype) {
+      // 保存li元素
+      if (elem.children[0].__proto__ === HTMLAnchorElement.prototype) {
+        lList.push(elem);
+      }
+      for (let i = 0; i < elem.children.length; i++) {
+        let cur = elem.children[i];
+        if (cur.__proto__ === HTMLAnchorElement.prototype) {
+          if (autoNumber) {
+            cur.text = deep + ' ' + cur.text;
+          }
+        } else if (cur.__proto__ === HTMLUListElement.prototype) {
+          addTocNumber(cur, deep);
+        }
+      }
+    }
+  }
+
+  function removeParentActiveClass() {
+    let parents = tocContent.querySelectorAll('.' + active)
+    parents.forEach(function (elem) {
+      elem.classList.remove(active);
     });
   }
-  </script>
-        <div class="section-box box-shadow-wrapper">
-          <section class="section archives-section bg-color posts-expand">
-            
 
-<div class="bg-color">
-  <div class="archive-timeline-box">
-    <div class="archive-timeline-title">
-      
-        <h2>非常好！目前共计3篇日志，继续努力！</h2>
-      
-    </div>
-    
-      
-      
-        <div class="node-title">
-          <h2 class="tag-year">2020</h2>
-        </div>    
+  function addActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.add(activeClass);
+    }
+  }
+
+  function removeActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.remove(activeClass);
+    }
+  }
+
+  function addActiveLiElemment(elem, parent) {
+    if (!elem || elem === parent) {
+      return;
+    } else {
+      if (elem.__proto__ === HTMLLIElement.prototype) {
+        elem.classList.add(active);
+      }
+      addActiveLiElemment(elem.parentElement, parent);
+    }
+  }
+
+  function showToc() {
+    if (tocWrapper) {
+      postBody = document.querySelector('#post_body');
+      for (let i = 0; i < postBody.children.length; i++) {
+        if (postBody.children[i].__proto__ === HTMLHeadingElement.prototype) {
+          hList.push(postBody.children[i]);
+        }
+      }
+      if (tocWrapper.classList.contains('compress')) {
+        tocContent.classList.add('closed');
+      } else if (tocWrapper.classList.contains('no_compress')) {
+        tocContent.classList.add('expanded');
+      } else {
+        if (hList.length > 10) {
+          active = 'active-hidden'
+          tocContent.classList.add('closed');
+        } else {
+          tocContent.classList.add('expanded');
+        }
+      }
+    }
+  }
+
+  (function () {
+    // 处理不是从#一级标题开始目录
+    if (tocContent.children.length === 1 && tocContent.children[0].__proto__ === HTMLLIElement.prototype) {
+      let con = tocContent.children[0].children[0];
+      tocContent.innerHTML = con.innerHTML;
+    }
+    let markdownItTOC = document.querySelector('.markdownIt-TOC');
+    let innerHeight = window.innerHeight;
+    markdownItTOC.style = `max-height: ${innerHeight - 80 > 0 ? innerHeight - 80 : innerHeight}px`
+    addTocNumber(tocContent, '');
+  })();
+
+  document.addEventListener('scroll', function (e) {
+    if (lList.length <= 0) {
+      return;
+    }
+    let scrollTop = document.scrollingElement.scrollTop + 10;
+    let dir;
+
+    if (lastTop - scrollTop > 0) {
+      dir = 'up';
+    } else {
+      dir = 'down';
+    }
+
+    lastTop = scrollTop;
+    if (scrollTop <= 0) {
+      if (lastIndex >= 0 && lastIndex < hList.length) {
+        lList[lastIndex].classList.remove(activeClass);
+      }
+      return;
+    }
+
+    let current = 0, hasFind = false;
+    for (let i = 0; i < hList.length; i++) {
+      if (hList[i].offsetTop > scrollTop) {
+        current = i;
+        hasFind = true;
+        break;
+      }
+    }
+    if (!hasFind && scrollTop > lList[lList.length - 1].offsetTop) {
+      current = hList.length - 1;
+    } else {
+      current--;
+    }
+    if (dir === 'down') {
+      if (current > lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex)
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    } else {
+      if (current < lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex);
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    }
+  });
+
+
+  window.addEventListener('load', function () {
+    showToc();
+    document.querySelector('#sidebar').style = 'display: block;';
+    tocWrapper.classList.add('toc-active');
+    setTimeout(function () {
+      if ("createEvent" in document) {
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("scroll", false, true);
+        document.dispatchEvent(evt);
+      }
+      else {
+        document.fireEvent("scroll");
+      }
+    }, 500)
+  })
+
+</script>
+            </div>
+          
         
-      
-      <a href="https://azukeru.github.io/post/shu-tu-wa-xuan-tong-ren/">
-        <div class="motion-warpper tag-archive-node">
-          <div class="tag-node">
-            <h1>
-              12-06
-              <small>殊途·婠暄同人</small>
-            </h1>
-          </div>  
       </div>
-      </a>
+    </div>
+  
+</div>
+<script>
+  const SIDEBAR_TITLE_ACTIVE = 'sidebar-title-active';
+  const SIDEBAR_BODY_ACTIVE = 'sidebar-body-active';
+  const SLIDE_UP_IN = 'slide-up-in';
+
+  let sidebar = document.querySelector('#sidebar'),
+  tocSideBar = document.querySelector('#tocSideBar'),
+  metaSideBar = document.querySelector('#metaSideBar'),
+  postToc = document.querySelector('#post_toc'),
+  postSiteMeta = document.querySelector('#post_side_meta'),
+  sidebarTitle = document.querySelector('.sidebar-title'),
+  sidebarBody = document.querySelector('#sidebar_body');
+
+  tocSideBar && tocSideBar.addEventListener('click', (e) => {
+    toggleSidebar(e);
+  });
+
+  metaSideBar && metaSideBar.addEventListener('click', (e) => {
+    toggleSidebar(e);
+  });
+
+  function toggleSidebar(e) {
+    let currentTitle = document.querySelector("."+SIDEBAR_TITLE_ACTIVE);
+    if (currentTitle == e.srcElement) {
+      return ;
+    }
+    let current, showElement, hideElement;
+    if (e.srcElement == metaSideBar) {
+      showElement = postSiteMeta;
+      hideElement = postToc;
+    } else if (e.srcElement == tocSideBar){
+      showElement = postToc;
+      hideElement = postSiteMeta;
+    }
+    currentTitle.classList.remove(SIDEBAR_TITLE_ACTIVE);
+    e.srcElement.classList.add(SIDEBAR_TITLE_ACTIVE);
+
+    window.Velocity(hideElement, 'stop');
+    window.Velocity(hideElement, 'transition.slideUpOut', {
+      display: 'none',
+      duration: 200,
+      complete: function () {
+        window.Velocity(showElement, 'transition.slideDownIn', {
+          duration: 200
+        });
+      }
+    })
+    hideElement.classList.remove(SIDEBAR_BODY_ACTIVE);
+    showElement.classList.add(SIDEBAR_BODY_ACTIVE);
+  }
+
+  postToc && postToc.addEventListener('transitionend', function() {
+    this.classList.remove(SLIDE_UP_IN);
+  });
+
+  if (sidebarBody) {
+    if (sidebarBody.classList.contains('pisces') || sidebarBody.classList.contains('gemini')) {
+      let hasFix = false;
+      let scrollEl = document.querySelector('.main-continer');
+      let limitTop = document.querySelector('#nav_ul').children.length * 42 + 162;
+      window.addEventListener('scroll', function(e) {
+        if (document.scrollingElement.scrollTop >= limitTop) {
+          if (!hasFix) {
+            sidebar.classList.add('sidebar-fixed');
+            hasFix = true;
+          }
+        } else {
+          if (hasFix) {
+            sidebar.classList.remove('sidebar-fixed');
+            hasFix = false;
+          }
+        }
+      });
+    }
+  }
+  
+</script>
+        <div class="section-box box-shadow-wrapper">
+          <div class="section bg-color post post-page">
+            <header class="post-header">
+  <h1 class="post-title">
+    <a class="post-title-link" href="https://azukeru.github.io/post/chang-men-liu-chen-a-jiao/">
+      长门柳（陈阿娇）
+    </a>
+  </h1>
+  <div class="post-meta">
     
-      
-      
-      <a href="https://azukeru.github.io/post/chang-men-liu-chen-a-jiao/">
-        <div class="motion-warpper tag-archive-node">
-          <div class="tag-node">
-            <h1>
-              12-06
-              <small>长门柳（陈阿娇）</small>
-            </h1>
-          </div>  
-      </div>
-      </a>
+    <span class="meta-item pc-show">
+      <i class="fa fa-calendar-o"></i>
+      <span>发布于</span>
+      <span>2020-12-06</span>
+      <span class="post-meta-divider pc-show">|</span>
+    </span>
     
+    <span class="meta-item">
+      <i class="fa fa-folder-o"></i>
+      <span class="pc-show">分类于</span>
       
       
-      <a href="https://azukeru.github.io/post/chang-men-liu-chu-fu/">
-        <div class="motion-warpper tag-archive-node">
-          <div class="tag-node">
-            <h1>
-              12-06
-              <small>长门柳（楚服）</small>
-            </h1>
-          </div>  
-      </div>
+      <a href="https://azukeru.github.io/tag/HS5k8vE9L/">
+        <span>novel</span>
       </a>
+      
+      
+    </span>
+    <span class="post-meta-divider">|</span>
+    
+    <span class="meta-item">
+      <i class="fa fa-clock-o"></i>
+      <span>35分钟</span>
+    </span>
+    <span class="meta-item">
+      <span class="post-meta-divider">|</span>
+      <i class="fa fa-file-word-o"></i>
+      <span>10210<span class="pc-show">字数</span></span>
+    </span>
     
   </div>
-  
-<div class="page bg-color">
-  <ul class="pagination-ul">
-    
-    
-      
-        <li class="pagination-li pagination-active">
-            <a href="/archives/page/../">
-              1
-            </a>
-        </li>
-      
-    
-    
-  </ul>
-</div>
-</div>
+</header>
+            <div class="post-body next-md-body" id="post_body">
+              <p>铜镜中映照着的女人，正在侍女的服侍下梳妆，但胭脂水粉，也掩饰不住时光的流逝。几道略显疲老的皱纹，不再吹弹可破的肌肤，微微发福的身材，从上到下都昭示着女人已经失去了年轻时的光彩。<br>
+　　陈阿娇看着镜中的自己，不可避免地叹了一口气。<br>
+　　老了。<br>
+　　饶是她已经尽力看淡了这些，可时光易逝，美人迟暮的故事，总是让人唏嘘，何况发生在自己身上。<br>
+　　只是近来她对这种感觉异常强烈，因为她的健忘愈发明显，有时候一时不知道自己刚刚做了什么，或者将某件东西放在哪里。<br>
+　　其实对于养尊处优的废后来说，忘记一些事并不会影响什么，只是生活中偶尔多些困扰而已。但陈阿娇还是忧虑了起来，因为有些重要的事情，她并不想忘记。<br>
+　　眨眼之间，铜镜里映照着的，忽然间多了一个人。<br>
+　　那人面色微微苍白，眉目便如水墨画上去的一样，一抹红唇，并不妖艳，五官形成了一种柔和的神秘。一头乌黑的长发用木簪简单挽了一个髻，一身熟悉的深色云纹巫服，悄然站在陈阿娇身边。<br>
+　　“楚服，你来了。”<br>
+　　陈阿娇因在梳发，不便乱动，便笑着看向铜镜中的楚服说。<br>
+　　楚服并不答话，只同样看着镜中的阿娇，微微笑了起来。<br>
+　　陈阿娇看着镜中的自己，已显老态色衰，再瞧着楚服，依旧是年轻明丽。<br>
+　　“楚服，你还是这般模样，不像我……”<br>
+　　楚服继续沉默着，但是她扭头看向了阿娇。<br>
+　　梳好了发髻的阿娇也抬头望向了楚服，看着她深邃如墨的眼睛。<br>
+　　楚服歪了歪头，伸手拉住了阿娇的衣袖，似是要把她带向某个地方。<br>
+　　阿娇就由她拉着自己，跟着她出了门。<br>
+　　一出门，阿娇就惊住了，外面的景致，分明是当年椒房殿外的样子，阿娇惊得朝屋内看，却也不见原来的屋子和侍女，都变成了椒房殿。<br>
+　　楚服不让她有时间犹疑，不管不顾地拉着她往前走。阿娇心中虽有些迷惑，但一心只想跟着楚服。<br>
+　　走到院中，阿娇却看到不远处苗圃有二人提着锄头水桶，忙忙碌碌地在地上干着什么。<br>
+　　很熟悉的感觉，看着那一青一乌的两个身影，阿娇心里不知为何一股暖意，她笑了起来，转头看向了楚服，又正对上她的眸子。楚服看着她，略微腼腆地笑，手顺着她的衣袖向下滑，牵住了阿娇的手。<br>
+　　阿娇自然地反握了回去，又朝楚服靠近了些，二人就这样在廊下，携手看着院中的两个身影。<br>
+　　“皇后，为何不种桃树梅树李树，却要种柳树？”乌色身影拿着水勺，边给柳树浇水，边问。<br>
+　　“楚服，我看你挺聪明的，不如猜一猜。”青色身影嗤嗤笑了两声。<br>
+　　“那……皇后喜欢柳树？”<br>
+　　陈皇后摇了摇头。<br>
+　　“嗯……”楚服皱起了眉，费力思索，“春日柳絮纷飞极美，皇后想看柳絮？”<br>
+　　陈皇后调侃地看了楚服一眼，继续摇头。<br>
+　　“那……”楚服认输，“我实在不知道了。”<br>
+　　“楚服，你还是太笨了。我问你，这柳树谁种的。”<br>
+　　“皇后种的。”<br>
+　　陈皇后此刻觉得楚服笨得十分不争气，便用带泥的手点了点楚服的额头，在她眉心留下一个泥印子，道：“这柳树，是我和你种的。”<br>
+　　“柳和留谐音，”陈皇后笑着直直地看着楚服，“楚服，我想要你一直留在我身边。”<br>
+　　楚服猝不及防，愣在原地。<br>
+　　陈皇后对这样木讷的反应很不满意，挑眉问道：“怎么，你不愿意？”<br>
+　　楚服这才回过神来，连忙道：“怎么可能呢！楚服自然会长伴皇后身侧，就算不种柳树，也是这样的。不陪着皇后，楚服又能去哪儿呢？”<br>
+　　陈皇后听了这样的回答满意地点点头：“那便好。楚服，这样我们就可以一同看这棵柳树从小长到大，再用这棵柳树的柳条编花环。但我还不会，你先学，然后教我。”<br>
+　　楚服见她已盘算了这么多，觉得有些好笑：“好。”<br>
+　　陈阿娇远远地看着那两个身影嬉笑，心中感慨万千，不由得转身想和楚服说话，却发现身边空无一人。明明紧紧牵住的手，不知何时已经空了。陈阿娇再抬头，却连远处地两个身影也没有了。<br>
+　　环顾四周，仍是椒房殿，但是一个人也看不到了。<br>
+　　陈阿娇被这景象吓到手脚发凉，四处寻找，可是仍旧没有任何人。急急地寻到一半，陈阿娇忽然站住了，她想到了什么，忍不住捂住了胸口，逐渐浑身颤抖了起来。<br>
+　　<br>
+　　陈阿娇猛然惊醒，她仔细看了看周围，发现自己确实仍在长门宫自己的寝殿内。她用手擦了擦脸，发现竟有泪水。<br>
+　　天已经大亮，或许已近正午，但在长门宫，陈阿娇就是地位最高的主人，不需要去请安或逢迎谁，因此除了禁锢之外，在宫内倒是极为自由。<br>
+　　陈阿娇微咳了两声，便有侍女进来，低声询问她是否要起床梳洗。<br>
+　　她点点头，起身穿衣，坐到了梳妆台前。<br>
+　　“我头有些痛，给我揉揉吧。”<br>
+　　侍女便应声凑上前，双手按着她的太阳穴，轻轻按摩了起来。<br>
+　　陈阿娇闭上了眼，在按摩之下，感觉好多了。她长长舒了口气，觉得胸口不再那么郁结了。<br>
+　　在这现实里，她知道楚服不会再出现在身边，只有自己，漫长而虚度地活着。而这样的自己，对之前的事，也记不真切了。<br>
+　　楚服，你是怕我忘了吗？<br>
+　　陈阿娇心中苦涩。</p>
+<h2 id="我也怕我忘了">我也怕我忘了。</h2>
+<p>春日的长门宫内，树木葱郁，花却不多，偶有几株桃花梨花开得艳，但隐在深深的庭院之中，没有欣赏的观众，反而显得开得寂寥。因为没有人驱赶，而树木繁盛，长门宫便成了鸟儿的钟情之地，因为自由自在，它们常常停在树枝上鸣叫，成了这宫内最喧哗的声音。<br>
+　　长门宫原叫作长门园，因为曾是馆陶大长公主的私家园林。后来大长公主的情夫董偃担心自己的未来，就以皇帝去顾成庙祭祀，却因萩竹籍田无行宫可住的名义献给了皇帝，皇帝大喜，就赐名长门宫。<br>
+　　长门宫虽地处荒凉，可却是馆陶大长公主精心修建的园林，因此宫内植物错落，长廊环绕假山池塘蜿蜒，景致甚好。<br>
+　　但是如此佳园如今却成了京城皆知的忌讳之地，因为废后陈阿娇被皇帝下令退居此处。<br>
+　　虽然陈阿娇仍按照法度受到优待，可是毕竟是废后，没有多少人愿意在这无人眷顾的幽园浪费自己一生的光阴，她也知晓，所以她常常放遣宫女，只留些必要的人手。<br>
+　　长门宫因此显得更加寂静了。<br>
+　　原先在椒房殿侍奉陈皇后的侍女们，在她退居长门宫之后，也被一道遣到了这里继续服侍她。侍女们原先很担心陈皇后发疯或者情绪失控，可没想到在长门宫的陈皇后仿佛变了一个人一样，不像从前那样骄横跋扈，喜怒无常，反而变得沉静了许多。<br>
+　　侍女们吓得以为废后精神错乱了，但她处处行为如常人，时日一长，侍女们也习惯了皇后如今的样子。皇帝待陈废后总是有旧情的，嘱咐要好好看护她，皆如在椒房殿一般礼遇，不能让陈废后做出轻生的傻事。只要陈废后不寻死觅活，侍女们就不会被牵连，可以安稳度日。<br>
+　　陈阿娇所住的主殿很大，殿后湖旁有一棵大柳树，位置很好，已经长了十多年，足有合抱粗，每到春日，抽出新叶，陈废后就常常在那棵柳树下赏景观鱼，折柳枝编作花环。<br>
+　　那棵柳是陈废后退居长门宫后求皇帝从椒房殿挖回来的，刚栽在长门宫的时候，陈废后担心柳树不适应水土，会养不活，所以天天都会亲自看护。这棵柳树也没有辜负她的期待，顺利成活，长得很好。<br>
+　　陈阿娇在长门宫，倒也过着自在的日子，除了不能随意离开这里。<br>
+　　不过寒食这天是个例外，皇帝特许她在这一日离开，去母家祭祀。<br>
+　　她从来没有想过父母如果离开人世会怎么样，因为自小起，父母就一直为她遮风挡雨。可是她不需要去想象，因为时间就让她就如此经历了。<br>
+　　被废第二年，元光六年，阿娇的父亲堂邑侯陈午就因病逝世。这消息宛如惊雷，一时让陈阿娇不知所措。也是到了这时，她才知道，原来印象中康健有力的父亲，在这几年已经疾病缠身，大不如从前。<br>
+　　而父亲未过世时，母亲就和董偃关系亲近，父亲过世后，母亲和董偃，更是在长安人尽皆知。年逾五旬的老妪和年才十八的翩翩少年，怎么样都是茶余饭后的谈资。<br>
+　　陈阿娇原先因为自己的事焦头烂额，而馆陶大长公主也未曾将此事对阿娇透露过。直到很后来，她才真正弄清楚长门宫的缘由和母亲的故事。<br>
+　　都搞清楚后的陈阿娇怅然若失，原来自己心目中父母是恩爱夫妻、人间佳偶的印象，只是自己一厢情愿的假象。<br>
+　　诗经中所言“执子之手，与子偕老”，莫不过是诗经里的一个梦罢了。<br>
+　　这样想着，陈阿娇便觉得，自己和刘彻这样的结局，或许也是注定的。<br>
+　　多年后，母亲的情夫董偃去世，没几年，元鼎元年，母亲也去世了，却不肯和父亲合葬，遗言中执意要和情夫董偃合葬霸陵，而皇帝不知是尊重姑母还是不想和已故之人过不去，最终也同意了。<br>
+　　陈阿娇自入宫后，包括退居长门宫，与父母兄弟见面次数都极少，关系自然也逐渐生疏。<br>
+　　而两个兄弟，堂邑侯陈须和隆虑侯陈蟜，阿娇也未曾想到过，会先自己而去。他二人在宫外的生活，比自己恣意放纵多了，按着他们荣华富贵的程度，自应该比自己长寿得多了。但他们却在为母亲服丧期间，互相争夺遗产，且又服丧期间做下奸淫之事，两人因此犯了死罪，纷纷自杀，被皇帝除去爵位。<br>
+　　母亲辛辛苦苦操劳一生为子女三个人谋划的爵位富贵，在她身死不久之后，就化为云烟了。<br>
+　　而陈阿娇自此失父丧母绝兄弟，剩下自己孤零零的一个人。<br>
+　　母家剩下的人，于陈阿娇来说，不过是和自己有关系的陌生人而已。回家准备祭祀时，阿娇也只不过是按部就班完成任务，和他们进行普通的寒暄而已。<br>
+　　真正和她亲密的人，都不在了。<br>
+　　父母葬在不同的地方，陈阿娇就需要去不同的地方祭奠，所幸一路有马车，行程并不慢。紧赶慢赶，三个时辰就可以都完成。<br>
+　　而陈阿娇在祭完父母之后，也不愿意在母家多呆，会尽快回长门宫。余下的时间，她就会一直守在那棵大柳树旁边。<br>
+　　今年的寒食也是如此，因为起得有些晚了，回来也比之前晚了一些。她照着往常的惯例，来到后湖的柳树旁。<br>
+　　侍女们早就准备好了种柳需要的工具，和一枝从那棵大柳树上折下的可供种植的柳条。<br>
+　　自住进长门宫后，每年寒食陈阿娇都会在湖边种一株柳。<br>
+　　&quot;一、二……&quot;陈阿娇从那棵大柳树起，沿着湖边数着自己种下的这些柳树，走到最后一个，一共是十五棵。<br>
+　　“十五……已经这么多年了啊。”陈阿娇不免失神地笑笑。<br>
+　　确实过了很多年，长门宫外风云变幻，陈阿娇被废之后，卫子夫成为了新的皇后，而刘彻和卫子夫的长子，大汉的太子刘据，都已经十多岁了，他还是在陈阿娇被废之后才出生的。<br>
+　　只不过陈阿娇一直住在长门宫内，宫内时光如古井无波，就春夏秋冬这样变换着，谁也不能感到时光匆匆，只是会觉得一年又一年，徒增马齿罢了。<br>
+　　陈阿娇的时间，仿佛停在了被废的那一年。<br>
+　　也是楚服死的那一年。<br>
+　　那一年发生了很多事情，发生地太快太猛烈，以致于陈阿娇之后回忆，有些事也记不清究竟是怎么发生的。<br>
+　　总归一切都那样发生了。<br>
+　　陈阿娇阻止不了任何事，只能承受着。<br>
+　　带走楚服的那晚后，皇帝就一直把她关在椒房殿，派了重兵把守，严密隔绝消息，不允许任何人员信息流通。<br>
+　　陈阿娇在椒房殿中度日如年，忧心如焚，她出不去，外面的消息也进不来，她不知道楚服怎么样了，而自己的母亲和母家，会不会因此受牵连。<br>
+　　焦虑之下，她根本不能甘心留在椒房殿内，可是皇帝下了严令，门口的守卫不敢懈怠，陈阿娇无论使出什么手段，她都出不去，打听不到消息，也见不到皇帝。<br>
+　　寻死觅活这种手段，陈阿娇不是没有尝试过，可是有人牢牢地看着，无奈之下，她决心绝食，以此为抗议，巫蛊之事她为首徒，愿一力承担。<br>
+　　只是皇帝毕竟是皇帝，陈阿娇饿昏得奄奄一息，他便直接派了太医直接来看顾她，只有一个要求，不要让她死。<br>
+　　陈阿娇每日躺在床榻之上，浑浑噩噩，其间还烧了几次，也不知时间过了多久，也不知发生了什么。<br>
+　　太医为了她尽心尽力，陈阿娇终究是活得好好的，没有死得成。<br>
+　　等她在调理下清醒，已经是几个月之后了。<br>
+　　她睁开眼后，竟看到了刘彻。<br>
+　　他居高临下地看着她，淡然道：“你可以再寻死，我会让陈家陪你的。”<br>
+　　陈阿娇看着皇帝熟悉的面庞，心里觉得冷，她默然无语，只是看了他许久。<br>
+　　最后偏过头，阖目叹了口气。眼泪就这样滑落。<br>
+　　也是等到这个时候，她才知道自己早在秋七月乙巳日就被皇帝一纸诏书，废去了皇后之位。<br>
+　　皇帝对她还有一丝仁慈，命等她休养好后，再搬出椒房殿。<br>
+　　清醒后的陈阿娇，才发现椒房殿中景物大变，好似被清洗一空。她发了疯一样翻了整个宫殿，却连原本与楚服有关的旧物，再寻不到一点。<br>
+　　陈阿娇感受到彻头彻尾的无力，什么身份地位都是虚妄，觉得自己不过一个困在皇帝牢笼中的幽魂，只能听凭摆布而已。<br>
+　　她失魂落魄地赤着脚站在石砖地上，着一身单衣，抱紧自己，蹲在主殿之中崩溃地大哭了一场。<br>
+　　她最后还是什么都没有留住。<br>
+　　陈阿娇看清了现实，不再做无用的挣扎。<br>
+　　她心里觉得好笑，他曾对自己说过，喜欢自己骄傲肆意的样子，却最终，要把自己变成一个任他摆布的木偶。<br>
+　　陈阿娇这才发现，幼时他说“若得阿娇作妇，当作金屋贮之”，如今，他果真做到了，只不过不是没有贮于金屋，而是冷宫。<br>
+　　许是心境不同，听同一句话的感受也不同，阿娇发现，或许皇帝，原本就只是把自己当成一个值钱的物件。<br>
+　　随着时间流逝，巫蛊的风波逐渐平息，慢慢地没有多少人提及。在这样的平静下，情绪稳定下来的陈阿娇迁居长门宫。<br>
+　　趁此机会，阿娇求皇帝从长门宫拿回了和楚服有关的唯一遗留下来的旧物，那棵柳树。<br>
+　　许是并不起眼，才幸免于难。<br>
+　　在长门宫里，她才知道了楚服的死讯。<br>
+　　那天天气晴好，窦太主终于得了皇帝的许可，到长门宫看望陈阿娇。<br>
+　　母女二人旷别许久未见，一时竟激动相对无言。<br>
+　　窦太主先上来握住阿娇的手，仔细摸了两下，然后又摸着阿娇的脸，看了许久，才说：“瘦了，憔悴了。”<br>
+　　陈阿娇拉着窦太主坐了下来，抿了抿唇，道：“母亲，你也消瘦了。”<br>
+　　“不过没事了，”窦太主拉着阿娇，轻轻拍了拍她的手，“事情都过去了，便是这样也好，都活着。阿娇啊，你还有母亲。”<br>
+　　母女二人说了半天的话，把巫蛊事件以来所有没能说的话，都补上了。<br>
+　　从窦太主这里，陈阿娇才终于了解了在自己被禁锢在宫里的时候，宫外发生了什么。<br>
+　　虽然母家未受多少牵连，但这件事并没有那么容易平息。皇帝震怒，除了将自己废了后位外，还牵连诛杀三百余人。母家一族在那段时间里都胆战心惊，唯恐明日皇帝便派人围府，将一家都全部下狱判刑。<br>
+　　窦太主絮絮叨叨的，虽然说得有些颠倒，但还是把事情说得七七八八。<br>
+　　“母亲，楚服呢？”窦太主的叙述中刻意避免着这个名字，但陈阿娇还是忍不住问。<br>
+　　窦太主听了一愣，一时没有接话，看着阿娇：“阿娇，母亲当初不该迷了心窍，给你引见女巫……”<br>
+　　“母亲，和这个没有关系，我是问，”陈阿娇说到此处，不禁紧张地咽了下口水，“楚服呢？”<br>
+　　窦太主看着陈阿娇，叹了口气，思索良久才道：“阿娇，过去了，就让它过去吧。”<br>
+　　“不，母亲，不知道楚服如何，我永远不会安心。”<br>
+　　窦太主见陈阿娇如此坚定，也没了办法，只得道：“皇帝很是忌讳巫蛊之事，此事，之后也不要再和旁人提。”<br>
+　　陈阿娇点点头。<br>
+　　窦太主环顾四周后，方道：“楚服获罪大逆无道，牵连诛杀三百余人之前，就于闹市枭首了。”<br>
+　　陈阿娇不禁捏紧了拳。<br>
+　　“枭首……吗……”陈阿娇手心传来了指甲掐进皮肤的疼痛，她松了松手，舒了一口气，“那她，葬在哪里？”<br>
+　　“这谁知道。”<br>
+　　“母亲？”陈阿娇蹙起了眉，“我想知道……她到底是因为我……”<br>
+　　“阿娇，她的死，和你没有关系。”窦太主果断地结束了这个话题，“你再怎么样也身份尊贵，她不过是一个微贱的巫女罢了。别再想了。”<br>
+　　陈阿娇怔在原地，她知道自己和母亲已经没有什么好说的了。<br>
+　　郁结她心中几个月的石块得到了解答，可答案也并不让她好受。<br>
+　　其实陈阿娇心中已经预料到楚服凶多吉少，只是仍想着，纵使楚服不在人世，她也要去祭奠她。<br>
+　　窦太主的叙述草草带过，并未提及地过于详细。陈阿娇之后又托人详细打探，结果与窦太主所言相似，只是得知了一些细节。譬如楚服的供状之中，说并未受到陈皇后指使，而是自己为了权势蛊惑皇后。譬如她于狱中被严刑拷打，行枭首之刑的时候，她已经不能自己行走，是被狱卒拖行到刑场的。譬如楚服死后曝尸闹市，因为皇帝怒极，无人敢收尸，后来纷繁杂乱，也无人知晓尸首下落。<br>
+　　祭无可祭。<br>
+　　陈阿娇看着记载这些竹简，看着看着，眼泪就从脸颊滑落。<br>
+　　自己其实有很多事情，都不知道。<br>
+　　陈阿娇知道，楚服并不是一个好人。<br>
+　　她生活于宫中，可并未就因此堵塞耳目。听闻楚服仗着自己给予的权势，曾逼死一个曾有旧怨的小吏。她在宫外行事，也不低调，身边常前呼后拥，手下门徒也不少，也有些违法乱纪的事。<br>
+　　她并非良善之人，可却待自己极好。<br>
+　　陈阿娇入宫时日不短，也有防人之心，一开始对楚服也并不放心，但病急乱投医，她选择暂且相信楚服。<br>
+　　楚服身材高挑，穿上男装，倒也有几分风流的韵味。只是比之真正的男子，更显的瘦削清秀。她是和刘彻不一样的，刘彻英气勃勃，五官端正严肃得分明，总是有一股大而无畏的男子气概。因为政务繁忙，他总是步履匆匆，行事果决，不喜浪费时间，因此新婚几年过后，他就越来越少的时间陪着阿娇，他的志向，在大汉的宏图伟业。而楚服眉目秀气，着男装后总是斯斯文文的，并不急躁。她会有大把的时间陪伴着自己，从清晨到夜晚，只要自己想，楚服就没有拒绝过。她没有什么雄心壮志，好像陪着自己就很好了。有时自己用膳地慢了，楚服先吃完，她就会在一旁看着自己，眼睛里带着温柔的笑意，等自己吃完。<br>
+　　温柔总是容易让人沉醉的，阿娇也不例外，何况她已经逐渐丧失了皇帝的宠爱，有许多年，未能有这般的体会。<br>
+　　楚服和刘彻是不同的，虽然楚服穿上男装作为刘彻的替身，可阿娇还是能清楚地分别。<br>
+　　有一刹那，陈阿娇觉得自己的这种行为，可能背叛了刘彻，不禁有些心惊肉跳。她曾无比珍惜自己和刘彻的感情，不想亲手让它染上污渍。可是她转念想，刘彻才是先离开的人，而自己仍然爱的是刘彻，这一切，都是为了让他回心转意。<br>
+　　她是有自己的正当理由的。<br>
+　　她花了许多时间劝说自己，男装后的楚服扮作了刘彻，是自己爱的刘彻，这样想着，阿娇似乎真能做到这样了。<br>
+　　即使楚服对她会有和刘彻截然不同的温存和体贴。<br>
+　　陈阿娇有的时候也会陷入恍惚和迷惑，心中会有种很飘渺的感觉，可是她不愿去深究。<br>
+　　在和楚服的相处中，陈阿娇逐渐放下了对楚服的防备。既然自己开心的时候是她陪着，失落的时候是她陪着，生气的时候她也会受着，对自己一直真心真意，那有什么理由不去信任她。<br>
+　　陈阿娇相信自己的感觉和直觉。<br>
+　　一切都沿着自己当初和楚服计划的那样有序进行，但偶尔也有失控的时候。<br>
+　　那一夜月色很好，照在椒房殿中，仿佛铺了一层晶莹白玉，阿娇觉得像极了当初她和刘彻琴瑟和鸣时的月色。<br>
+　　于是她就多饮了一些酒，夜风吹得人微醺，她觉得自己脑子有点晕。<br>
+　　楚服向来不喜欢喝酒，就只是喝水，陪着自己。<br>
+　　陈阿娇觉得有些扫兴又有些开心。<br>
+　　陈阿娇觉得自己应该没有喝醉，但是不知怎么回事，她久违地想起了小时候的事，就很想和楚服说，怕是连刘彻，也未曾听阿娇絮絮叨叨说这许多话。<br>
+　　楚服先是很耐心地听着，有时还和阿娇会心地笑起来，但也不知过了多久，她就变得不那么耐心，总是让阿娇不要再喝了，最后把陈阿娇往床上扶，给她卸下了首饰和外衣。<br>
+　　陈阿娇想，楚服怎么不想听了，可她并不想这么快结束，她想把自己有关的事情多告诉点给楚服，她不想睡。楚服真是太不听话了。<br>
+　　陈阿娇想着，要给她点颜色瞧瞧才好，让楚服知道，自己仍旧是大汉的皇后，椒房殿中的主人。<br>
+　　只是脑子转得比行动要慢了不少。<br>
+　　陈阿娇不记得自己是怎么吻上去的，当脑子有些清明的时候，她已经感受到楚服的唇齿。<br>
+　　这种亲密之举，陈阿娇太久没有感受到了，她不禁有些贪恋。<br>
+　　可是，对方是楚服。<br>
+　　不知过了多久，陈阿娇脑子中蹦出这样一丝理智。<br>
+　　她终于向后退，恋恋不舍地放开楚服。<br>
+　　陈阿娇擦了擦自己的唇，抬眼看向楚服。<br>
+　　面前的人到底是阿彻……？还是楚服……？<br>
+　　可是，陈阿娇心中却又在期盼，她想要进一步的温存。<br>
+　　自己究竟在做什么？<br>
+　　晃神间，楚服竟欺身靠近，吻了自己。<br>
+　　陈阿娇能感受到，楚服手心的温度，和她紧握自己的力度。<br>
+　　对方该和自己有同样的期盼吧？<br>
+　　随着越来越热烈的吻，情感战胜了理智，陈阿娇放弃分辨对方到底是谁，这不重要，她只想抓住这一刻。<br>
+　　对方与她唇舌交缠，是十分生涩却又热烈的。<br>
+　　在吻中，衣服被一件一件地褪下，直到二人肌肤相触。<br>
+　　陈阿娇看着撑在自己身上的对方，她发丝已变得凌乱，两颊微红，呼吸也发了重。<br>
+　　她第一次瞧见对方这样。<br>
+　　对方伸手抚过自己的眉眼，很慢很温柔。<br>
+　　“阿娇……”对方轻唤一声，无限柔情。<br>
+　　陈阿娇直直地盯着对方的眼睛，到底是怎样的眼睛，能这样毫无旁骛地温柔地炽热地看着自己。<br>
+　　她心中一动，不禁伸手紧紧搂住对方，感受着对方有些发烫的身体，情到迷时，她尤觉得不够，又轻吻了对方。<br>
+　　对方也抱住了自己，又从自己的眉眼开始吻，一路向下，落下数不清的吻。<br>
+　　陈阿娇第一次有这样的体验，对方小心翼翼地对待着自己，仿佛生怕弄疼了自己。<br>
+　　新奇而又享受。<br>
+　　陈阿娇不由自主地配合对方，引导对方。在香汗淋漓之中，两人的喘息呻吟声相互交叠着，一同走向极乐的顶点。<br>
+　　这样的欢愉，陈阿娇只和刘彻一起的时候体验过，恍惚之中，她以为自己又回到了那样的旧日时光。<br>
+　　是刘彻心里只有自己的，恩爱两不疑的时光。<br>
+　　到底有多久没感受到了，陈阿娇心中一酸，情不自禁道：“阿彻……”<br>
+　　对方搂着自己道：“我在。”<br>
+　　陈阿娇几乎要哭了出来：“别走……”<br>
+　　对方抚摸着她的头发，轻轻笑：“我不走。”<br>
+　　第二天醒过来的时候，陈阿娇是一个人睡在床上的，身边空无一人。脑子有些昏沉，一时觉得昨晚做了一个很放纵的梦，但种种迹象表明，那不是梦，而是真实发生过的。<br>
+　　但是更细节的东西却怎么都回想不出，看来昨晚确实喝的有些多了。<br>
+　　脑子里只剩一些很零散的一闪而过的片段。<br>
+　　只是那些片段里，直觉告诉阿娇，并没有刘彻，只有楚服。<br>
+　　陈阿娇决心不多去回想，她害怕想起来，自己真的和楚服逾了矩。<br>
+　　这不应该……自己分明只是想要刘彻回心转意，而且……两个女子怎能如此？陈阿娇想不通，也不敢深想。<br>
+　　这一场意外，她没有再提过，而楚服也没说过，二人都默契地当这件事，从来没发生过。<br>
+　　只是，二人都不自觉地更亲密了起来。陈阿娇自己也感觉，自己变得十分依赖楚服。从前她总是因为刘彻而郁郁寡欢，焦虑不安。现在她却变得越来越少地想到刘彻，因为只要看到楚服，她就觉得这一天，又会很安稳。<br>
+　　越是如此，陈阿娇就越会觉得不安，这样的日子太舒服了，舒服得让她惶恐，生怕就如泡沫一般绚丽而易逝。<br>
+　　可是她无法不沉迷这样的日子，因为那是美丽得任谁都想抓住的日子。<br>
+　　但她的担心不是没有道理的。<br>
+　　那天皇帝带兵，夜围了椒房殿。<br>
+　　纵是多年后再回忆，那晚于陈阿娇而言，犹是压抑而血腥的，兵士们的长戟的刃，在烛光的映照下折射出光，铠甲也沾满了寒气，气味逼得让人作呕。<br>
+　　刘彻的面庞在夜色中也扭曲了起来，陈阿娇是第一次见到这样刘彻。他震怒狰狞着面目质问着自己，冷酷的仿佛陌生人，而不是相守相伴十多年的枕边人。<br>
+　　这就是自己心心念念所求的人吗？<br>
+　　陈阿娇被重重一击，三魂六魄都被抽去了一样，宛如黑漆漆的墨袭来，淹没了整个人。<br>
+　　她害怕得呼吸不畅，她害怕失去现在拥有的一切，她害怕会失去楚服。<br>
+　　但陈阿娇总是骄傲的，即使是在暴跳如雷的皇帝面前，她也要撑起自己皇家贵女的尊严。<br>
+　　不要颤抖，也不要后退。<br>
+　　陈阿娇想，无论如何，也要保住楚服。<br>
+　　当珠钗的尖头刺破肌肤的时候，陈阿娇能感受到疼痛，但和她心中的惊惶相比，实在不算什么。<br>
+　　只是孤立无援的陈阿娇所能付出的努力，如螳臂当车而已。<br>
+　　在她几乎要和皇帝拼个鱼死网破的时候，她惊诧地看着楚服十分平静地站了出来，不卑不亢地朝着皇帝行礼。<br>
+　　“楚服……你为什么……”<br>
+　　陈阿娇紧紧握着手中的珠钗，声音微颤。<br>
+　　楚服，你难道自己不清楚吗？你会死的。<br>
+　　可是楚服仿佛没有读出陈阿娇的担忧，她只是定定地看着阿娇，恭敬地行了一礼：“皇后务必善自珍重。”<br>
+　　话音刚落，她就被士兵猛地向外拽，一个踉跄，又跌倒在地，可是兵士置若罔闻，就这样半拖半拽地往外拉，她的衣服和头发都在拉扯中变得凌乱。<br>
+　　堆砌出来的镇定在这一刻荡然无存，阿娇的心理防线被彻底击碎，她快步几步上前，想要拉住楚服，却被皇帝眼疾手快拦在半路。<br>
+　　“楚服——”声音一出，已是颤抖。<br>
+　　陈阿娇已经感受到，楚服此举，是在向自己道别。<br>
+　　陈阿娇想挣脱阻拦自己的手臂，但是很快又更多的人来阻拦自己，她不能再前进一点了。<br>
+　　“不要！不要——”陈阿娇挣扎着滑倒在地上，地面的砖传来彻骨的冰冷，她不断地哭叫，“楚服——”<br>
+　　楚服被带离椒房殿后，陈阿娇犹在地上哭喊。<br>
+　　她毕竟是皇后，兵士们能拦住她，却不敢说什么。<br>
+　　过了一会儿，皇帝像是烦了，他俯身蹲到陈阿娇面前，用力地把陈阿娇的头扳过来对着自己。<br>
+　　陈阿娇满脸是泪。<br>
+　　“这便是朕的好皇后，为了一个下贱恶毒的巫女，这样不顾脸面。”<br>
+　　“她不是。”陈阿娇看着刘彻，哀切却又字字清晰道。<br>
+　　“楚服著男子衣冠帧带，素与皇后寝居，相爱若夫妇。”刘彻面若寒霜，“她不下贱，不恶毒吗？你以为你是谁？你以为椒房殿是什么地方？”<br>
+　　陈阿娇没有躲避刘彻的目光。<br>
+　　“皇后是朕的皇后，椒房殿是朕的椒房殿，天下是朕的天下。你以为能瞒住我？”<br>
+　　“陛下后宫多少女子，就容不得妾身边，多一个知心人吗？”陈阿娇眼眶含泪，半是乞求，半是哀怜。<br>
+　　刘彻听罢拂袖而起，随后他就听到陈阿娇哀声道：“巫蛊之事，我为主谋，与旁人无关，还求陛下，明断。”<br>
+　　说完便听到一声磕头的响声。<br>
+　　陈阿娇向自己行了大礼。<br>
+　　刘彻不禁攥紧了拳头，他与陈阿娇相识这许多年，从没见过她这样低三下四，却是为了一个女而男装的巫女求情。<br>
+　　一个卑鄙下贱，心肠歹毒，把自己的皇后骗得五迷三道的巫女。<br>
+　　思及此处，刘彻不禁又怒从心中起，他不再多呆，吩咐人看管好皇后，就走出了椒房殿。<br>
+　　陈阿娇看着皇帝的背影消失不见，心中一片冰冷。<br>
+　　骤雨狂风，片叶难留。</p>
+<h2 id="一切都回不去了">一切都回不去了。</h2>
+<p>许是迫于皇帝的压力，许是已经过了当初那段艰难的时日，心态已经变化，总之陈阿娇自那件事后，还是好好地活着。<br>
+　　熬过了自己的父母，熬过了自己的兄弟，熬到这世上再没有什么让她牵挂的人。<br>
+　　就连当年严刑拷打楚服的侍御史张汤，也畏罪自杀，死在了阿娇前头。<br>
+　　阿娇一边松土挖坑一边回想。<br>
+　　其实在长门宫的这许多年里，她曾经又见过刘彻一次。<br>
+　　那天他去顾成庙祭祀，突然下起了瓢泼大雨，人马难行。而正好离长门宫很近，也不知道他怎么想，竟下令去长门宫躲雨。<br>
+　　这消息如平日惊雷，炸在长门宫内，上上下下，几乎都沸腾了，只是除了陈阿娇。<br>
+　　她在自己的主殿只简单嘱咐了几句好好接待皇帝，不要怠慢。<br>
+　　自己却一动不动，仍倚在榻上，捻起一枚果脯，送进嘴里。<br>
+　　“夫人……夫人不去见见？”侍女大着胆子问。<br>
+　　陈阿娇似是被果子酸到了，微微一皱眉：“我为何要去？”<br>
+　　却不等侍女们再说什么，陈阿娇连忙打发她们出去：“赶紧去安排吧，怠慢了皇帝，若是降罪下来，不是能担待得起的。”<br>
+　　侍女们犹疑间，还是唱了喏，依命鱼贯而出。<br>
+　　陈阿娇抬手揉了揉自己的太阳穴，十多年没见，她确实也并不想见。<br>
+　　说实话，对于刘彻，她早早地就认清了，这个男人，曾经是自己的夫君，但一直是这个国家的帝王。自己求的，绝不可能从他身上得到。<br>
+　　当初是自己过于痴妄了。<br>
+　　何况，中间横亘着那么多的人命，还有楚服。<br>
+　　说来奇怪，明明和刘彻相处十多年，和楚服只有一年多。可是她在长门宫内想起最多的，却是楚服。<br>
+　　也许楚服是给了自己最大温暖的人，也许那是自己最快活的记忆，也许是对于楚服的死自己一直心存歉疚，也许是自己一直在悔恨，因为看不到楚服年老的样子。<br>
+　　陈阿娇曾经召了一批画师，想要给楚服画个画像作为纪念，因为记忆中的楚服，已经逐渐模糊。她不敢说是为楚服画像，只是说是为一位故人。<br>
+　　可是只凭描述，画师们根本画不出楚服的模样。<br>
+　　画了三天，呈上来一百二十多幅，无一有一丝神韵。<br>
+　　陈阿娇最终放弃了这样的行为，给予画师们厚赠，打发他们走了。<br>
+　　她唯有时常回忆，才不至于让楚服在自己的记忆中消失。<br>
+　　过了一会儿，侍女却又推门进来：“夫人，皇帝想见一见您。”<br>
+　　陈阿娇一时没听清，又让侍女重复一遍，方叹了口气，悠悠起身：“且让陛下稍待。”<br>
+　　陈阿娇整理了下仪容，已经是半老的妇人了，她不喜浓妆艳抹，只稍微修整，显得有些好气色便罢了。<br>
+　　待她在刘彻所处的厅中远远看见他时，发觉经年未见，刘彻的两鬓也有些斑白，虽然仍正当年，可却不复少年时的意气风发了。<br>
+　　是陌生人，却又熟悉。<br>
+　　皇帝转身瞧见她，嗫嚅了几下，却什么都没说。<br>
+　　陈阿娇上前，行了个礼。<br>
+　　许久未有，行礼也生疏得很。<br>
+　　皇帝呢喃道：“你老了。”<br>
+　　“是。”陈阿娇点头道。<br>
+　　两人面面相觑，一时陷入了沉默。<br>
+　　“陛下好生歇息，妾不打扰了。”陈阿娇率先打破这样的寂静，却是告退了。<br>
+　　“你就不……”皇帝不免有些急。<br>
+　　陈阿娇已经转身走了一段路，停了下来，并没有回头：“陛下，往事不可回首，多说也无益处。”<br>
+　　“阿娇，你仍怨我。”<br>
+　　“陛下难道能让楚服复生？”<br>
+　　陈阿娇本不该这么说，但是她就是克制不住想要这么说的情绪。<br>
+　　这个名字像是冲破层层束缚一样再次来到皇帝耳边。<br>
+　　只是皇帝并不似当年那样怒气冲冲，他喃喃道：“楚服，楚服……这些年，你还念着她？”<br>
+　　陈阿娇回过头，远远地看着刘彻：“陛下，不可以吗？”<br>
+　　“她真心待我，我感念她。”<br>
+　　皇帝堵了许多话在喉头，像什么巫蛊之事，女而男淫，大逆不道之类，可是看着陈阿娇平静而又有了岁月痕迹的面容，他却说不出。<br>
+　　“罢了。”最后，皇帝挥挥手，“你走吧。”<br>
+　　她仍旧是骄傲的陈阿娇，未曾变过，只是那一刻，她觉得皇帝好像也苍老了许多。<br>
+　　那是陈阿娇最后一次见到刘彻，她自觉，半世纠葛，这样的结尾很好。<br>
+　　<br>
+　　陈阿娇将柳条放入挖好的坑中，用铲子将土拨进去，将坑填平，最后又浇了点水。<br>
+　　整个过程，她从不让任何人帮她，弄完后，自己累得出了层汗。<br>
+　　侍女们端来水盆让她净手，还有巾帕擦汗。<br>
+　　“十六……”陈阿娇自己呢喃道。<br>
+　　她觉得，每种下一株柳树，就好像和楚服相见，又近了一个年头。<br>
+　　而近来，她总觉得，似乎和楚服再会的时日，不远了。<br>
+　　她休息完又回到那棵大柳树身边，用手抚摸着柳树的树皮，感受着它的纹路。<br>
+　　楚服，后世会如何评说你我呢？<br>
+　　罢了，或许你我连名字都留不下。<br>
+　　陈阿娇想。<br>
+　　<br>
+　　史书记：（窦太主薨）后数年，废后乃薨，葬霸陵郎官亭东。无人知陈废后遗令自长门宫移一株柳树种于墓旁。</p>
 
-          </section>
+            </div>
+            <div class="post-footer">
+  <ul class="post-copyright">
+    <li class="post-copyright-author">
+      <strong>本文作者：</strong>
+      叶钟鱼
+    </li>
+    <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://azukeru.github.io/post/chang-men-liu-chen-a-jiao/" title="长门柳（陈阿娇）">https://azukeru.github.io/post/chang-men-liu-chen-a-jiao/</a>
+    </li>
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong>
+      本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i> BY-NC-SA</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+  <div class="tags">
+    
+      <a href="https://azukeru.github.io/tag/HS5k8vE9L/"># novel</a>
+    
+  </div>
+  <div class="nav">
+    <div class="nav-prev">
+      
+        <i class="fa fa-chevron-left"></i>
+        <a class="nav-pc-next" title="殊途·婠暄同人" href="https://azukeru.github.io/post/shu-tu-wa-xuan-tong-ren/">殊途·婠暄同人</a class="nav-pc-next">
+        <a class="nav-mobile-prev" title="殊途·婠暄同人" href="https://azukeru.github.io/post/shu-tu-wa-xuan-tong-ren/">上一篇</a>
+      
+    </div>
+    <div class="nav-next">
+      
+        <a class="nav-pc-next" title="长门柳（楚服）" href="https://azukeru.github.io/post/chang-men-liu-chu-fu/">长门柳（楚服）</a>
+        <a class="nav-mobile-next" title="长门柳（楚服）" href="https://azukeru.github.io/post/chang-men-liu-chu-fu/">下一篇</a>
+        <i class="fa fa-chevron-right"></i>
+      
+    </div>
+  </div>
+</div>
+            
+  
+
+          </div>
         </div>
       </div>
     </div>
@@ -456,6 +1058,36 @@
   // 代码高亮
   hljs.initHighlightingOnLoad();
 
+</script>
+    <div class="light-box" id="light_box"></div>
+<script>
+  let imgs = document.querySelectorAll('.post-body img');
+  let lightBox = document.querySelector('#light_box');
+  lightBox.addEventListener('mousedown', (e) => {
+    e.preventDefault()
+  })
+  lightBox.addEventListener('mousewheel', (e) => {
+    e.preventDefault()
+  })
+  let width = window.innerWidth * 0.8;
+  lightBox.onclick = () => {
+    let img = lightBox.querySelector('img');
+    lightBox.style = '';
+    img && img.remove();
+  }
+  imgs.forEach(item => {
+    item.onclick = function (e) {
+      let lightImg = document.createElement('img');
+      lightImg.src = this.src;
+      lightBox.style = `height: 100%; opacity: 1; background-color: rgba(0, 0, 0, 0.5);cursor: zoom-out;`;
+      lightImg.style = `width: ${width}px; border: 1px solid #fff; border-radius: 2px;`;
+      lightImg.onclick = function () {
+        lightBox.style = '';
+        this.remove();
+      }
+      lightBox.append(lightImg);
+    }
+  })
 </script>
   </div>
 </body>
@@ -2463,7 +3095,6 @@
   escapeMap.set('&quot;', '"');
   escapeMap.set('&amp;', '&');
 </script> -->
-
 
 
 </html>
