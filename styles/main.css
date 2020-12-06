@@ -2082,6 +2082,10 @@ body {
         width: 960px;
         margin: 0 auto;
       }
+    
+    .post-body {
+      font-size: 18px !important
+    }
     body {
       color: #555;
     }
@@ -2192,7 +2196,9 @@ body {
     }
     .mist .site-title i {
       background: #FFFFFFfe;
-    }.box-shadow-wrapper {
+    }p{ text-indent:2em;}
+.next-md-body h1, .next-md-body h2 {
+    border-bottom: none;.box-shadow-wrapper {
       box-shadow: none !important;
     }body {
       cursor: default;
